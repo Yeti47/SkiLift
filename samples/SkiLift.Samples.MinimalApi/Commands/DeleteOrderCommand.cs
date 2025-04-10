@@ -10,10 +10,8 @@ public record DeleteOrderCommand : ICommand
 
 public class DeleteOrderCommandHandler(IOrderRepository orderRepository) : ICommandHandler<DeleteOrderCommand>
 {
-    private readonly IOrderRepository _orderRepository = orderRepository;
-
     public async Task Handle(DeleteOrderCommand command, CancellationToken cancellationToken)
     {
-        await _orderRepository.DeleteAsync(command.Id);
+        await orderRepository.DeleteAsync(command.Id);
     }
 }
