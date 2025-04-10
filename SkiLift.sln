@@ -7,21 +7,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{191D95A4-3E8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiLift", "src\SkiLift\SkiLift.csproj", "{68E2F101-0695-49A9-9EE7-216D90A700A5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AA6BF463-3416-483D-9257-E7E920ECC217}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkiLift.Samples.MinimalApi", "samples\SkiLift.Samples.MinimalApi\SkiLift.Samples.MinimalApi.csproj", "{CC17E6CB-74DC-4E4E-A298-BB9351C40229}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{68E2F101-0695-49A9-9EE7-216D90A700A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{68E2F101-0695-49A9-9EE7-216D90A700A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68E2F101-0695-49A9-9EE7-216D90A700A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68E2F101-0695-49A9-9EE7-216D90A700A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC17E6CB-74DC-4E4E-A298-BB9351C40229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC17E6CB-74DC-4E4E-A298-BB9351C40229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC17E6CB-74DC-4E4E-A298-BB9351C40229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC17E6CB-74DC-4E4E-A298-BB9351C40229}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{68E2F101-0695-49A9-9EE7-216D90A700A5} = {191D95A4-3E88-4FCE-BFA4-E5892062FDD2}
+		{CC17E6CB-74DC-4E4E-A298-BB9351C40229} = {AA6BF463-3416-483D-9257-E7E920ECC217}
 	EndGlobalSection
 EndGlobal

@@ -148,21 +148,20 @@ public class SkiLiftConfiguration(IServiceCollection services)
     {
         lifetimeSelector ??= static _ => ServiceLifetime.Transient;
 
-        var pipelineBehaviorInterfaceType = typeof(IPipelineBehavior<,>);
-        var voidPipelineBehaviorInterfaceType = typeof(IPipelineBehavior<>);
-
         var pipelineBehaviorTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract)
-            .SelectMany(t => t.GetInterfaces(), (type, iface) => (Type: type, Interface: iface))
-            .Where(t => t.Interface.IsGenericType &&
-                (t.Interface.GetGenericTypeDefinition() == pipelineBehaviorInterfaceType ||
-                 t.Interface.GetGenericTypeDefinition() == voidPipelineBehaviorInterfaceType));
-
+            .Where(t => t.IsClass 
+                && !t.IsAbstract 
+                && !t.IsInterface 
+                && !t.IsNestedPrivate
+                && t.IsPublic 
+                && IsPipelineBehavior(t)
+            );
+            
         foreach (var pipelineBehaviorType in pipelineBehaviorTypes)
         {
-            var lifetime = lifetimeSelector(pipelineBehaviorType.Type);
+            var lifetime = lifetimeSelector(pipelineBehaviorType);
 
-            var descriptor = new ServiceDescriptor(pipelineBehaviorType.Interface, pipelineBehaviorType.Type, lifetime);
+            var descriptor = new ServiceDescriptor(typeof(IPipelineBehavior<,>), pipelineBehaviorType, lifetime);
 
             services.Add(descriptor);
         }
@@ -206,35 +205,54 @@ public class SkiLiftConfiguration(IServiceCollection services)
     /// <summary>
     /// Registers a specific pipeline behavior type.
     /// </summary>
-    /// <typeparam name="TRequest">The request type.</typeparam>
-    /// <typeparam name="TResponse">The response type.</typeparam>
-    /// <typeparam name="TBehavior">The behavior type.</typeparam>
-    /// <param name="lifetime">The lifetime of the behavior.</param>
+    /// <param name="pipelineBehaviorType">Type of the pipeline behavior.</param>
+    /// <param name="lifetime">The lifetime of the pipeline behavior.</param>
     /// <returns>The current <see cref="SkiLiftConfiguration"/> instance.</returns>
-    public SkiLiftConfiguration AddPipelineBehavior<TRequest, TResponse, TBehavior>(ServiceLifetime lifetime = ServiceLifetime.Transient)
-        where TBehavior : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
+    /// <exception cref="ArgumentException">Thrown if the type does not implement <see cref="IPipelineBehavior{TRequest, TResponse}"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if the type is not a generic type.</exception>
+    /// <remarks>
+    /// This method allows you to register a specific pipeline behavior type with a specified lifetime.
+    /// The type must implement <see cref="IPipelineBehavior{TRequest, TResponse}"/>.
+    /// If the type is not generic or does not implement the required interfaces, an exception will be thrown.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Register a specific pipeline behavior type
+    /// config.AddPipelineBehavior(typeof(MyCustomPipelineBehavior), ServiceLifetime.Singleton);
+    /// </code>
+    /// </example>
+    public SkiLiftConfiguration AddPipelineBehavior(Type pipelineBehaviorType, ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        var descriptor = new ServiceDescriptor(typeof(IPipelineBehavior<TRequest, TResponse>), typeof(TBehavior), lifetime);
-        services.Add(descriptor);
+        // Register the given pipeline behavior type, but only if it implements the correct interface (IPipelineBehavior<,> or IPipelineBehavior<>)
+
+        if (pipelineBehaviorType.IsAbstract || pipelineBehaviorType.IsInterface)
+        {
+            throw new ArgumentException($"Type {pipelineBehaviorType.Name} must be a concrete class.");
+        }
+
+        if (pipelineBehaviorType.IsGenericTypeDefinition)
+        {
+            if (IsPipelineBehavior(pipelineBehaviorType))
+            {
+                var descriptor = new ServiceDescriptor(typeof(IPipelineBehavior<,>), pipelineBehaviorType, lifetime);
+                services.Add(descriptor);
+            }
+            else
+            {
+                throw new ArgumentException($"Type {pipelineBehaviorType.Name} must implement IPipelineBehavior<,>.");
+            }
+        }
+        else
+        {
+            throw new ArgumentException($"Type {pipelineBehaviorType.Name} must be a generic type definition.");
+        }
 
         return this;
     }
 
-    /// <summary>
-    /// Registers a specific pipeline behavior type for requests without a response.
-    /// </summary>
-    /// <typeparam name="TRequest">The request type.</typeparam>
-    /// <typeparam name="TBehavior">The behavior type.</typeparam>
-    /// <param name="lifetime">The lifetime of the behavior.</param>
-    /// <returns>The current <see cref="SkiLiftConfiguration"/> instance.</returns>
-    public SkiLiftConfiguration AddPipelineBehavior<TRequest, TBehavior>(ServiceLifetime lifetime = ServiceLifetime.Transient)
-        where TBehavior : IPipelineBehavior<TRequest>
-        where TRequest : IRequest
+    private static bool IsPipelineBehavior(Type type)
     {
-        var descriptor = new ServiceDescriptor(typeof(IPipelineBehavior<TRequest>), typeof(TBehavior), lifetime);
-        services.Add(descriptor);
-
-        return this;
+        return type.IsGenericType
+            && type.GetInterfaces().Any(i => i.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
     }
 }

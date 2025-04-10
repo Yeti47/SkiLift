@@ -5,7 +5,7 @@ namespace SkiLift;
 /// </summary>
 /// <typeparam name="TRequest">The request type.</typeparam>
 /// <typeparam name="TResponse">The response type.</typeparam>
-public interface IRequestHandler<TRequest, TResponse> where TRequest : IRequest<TResponse>
+public interface IRequestHandler<in TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
     /// <summary>
     /// Handles the request and returns the response.
@@ -20,7 +20,7 @@ public interface IRequestHandler<TRequest, TResponse> where TRequest : IRequest<
 /// Interface for handling requests that do not return a response.
 /// </summary>
 /// <typeparam name="TRequest">The request type.</typeparam>
-public interface IRequestHandler<TRequest> where TRequest : IRequest
+public interface IRequestHandler<in TRequest> where TRequest : IRequest
 {
     /// <summary>
     /// Handles the request.
@@ -35,7 +35,7 @@ public interface IRequestHandler<TRequest> where TRequest : IRequest
 /// </summary>
 /// <typeparam name="TCommand">The command type.</typeparam>
 /// <typeparam name="TResponse">The response type.</typeparam>
-public interface ICommandHandler<TCommand, TResponse> : IRequestHandler<TCommand, TResponse> where TCommand : ICommand<TResponse>
+public interface ICommandHandler<in TCommand, TResponse> : IRequestHandler<TCommand, TResponse> where TCommand : ICommand<TResponse>
 {
 }
 
@@ -43,7 +43,7 @@ public interface ICommandHandler<TCommand, TResponse> : IRequestHandler<TCommand
 /// Interface for handling commands that do not return a response.
 /// </summary>
 /// <typeparam name="TCommand">The command type.</typeparam>
-public interface ICommandHandler<TCommand> : IRequestHandler<TCommand> where TCommand : ICommand
+public interface ICommandHandler<in TCommand> : IRequestHandler<TCommand> where TCommand : ICommand
 {
 }
 
@@ -52,6 +52,6 @@ public interface ICommandHandler<TCommand> : IRequestHandler<TCommand> where TCo
 /// </summary>
 /// <typeparam name="TQuery">The query type.</typeparam>
 /// <typeparam name="TResponse">The response type.</typeparam>
-public interface IQueryHandler<TQuery, TResponse> : IRequestHandler<TQuery, TResponse> where TQuery : IQuery<TResponse>
+public interface IQueryHandler<in TQuery, TResponse> : IRequestHandler<TQuery, TResponse> where TQuery : IQuery<TResponse>
 {
 }

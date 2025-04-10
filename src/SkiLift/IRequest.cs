@@ -4,7 +4,7 @@ namespace SkiLift;
 /// Marker interface for requests that return a response of type <typeparamref name="TResponse"/>.
 /// </summary>
 /// <typeparam name="TResponse">The response type.</typeparam>
-public interface IRequest<TResponse>
+public interface IRequest<out TResponse>
 {
 }
 
@@ -15,11 +15,12 @@ public interface IRequest
 {
 }
 
+
 /// <summary>
 /// Marker interface for commands that return a response of type <typeparamref name="TResponse"/>.
 /// </summary>
 /// <typeparam name="TResponse">The response type.</typeparam>
-public interface ICommand<TResponse> : IRequest<TResponse>
+public interface ICommand<out TResponse> : IRequest<TResponse>
 {
 }
 
@@ -34,6 +35,6 @@ public interface ICommand : IRequest
 /// Marker interface for queries that return a response of type <typeparamref name="TResponse"/>.
 /// </summary>
 /// <typeparam name="TResponse">The response type.</typeparam>
-public interface IQuery<TResponse> : IRequest<TResponse>
+public interface IQuery<out TResponse> : IRequest<TResponse>
 {
 }

@@ -1,4 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SkiLift;
 
@@ -7,19 +11,28 @@ namespace SkiLift;
 /// </summary>
 public class RequestDispatcher(IServiceProvider serviceProvider) : IRequestDispatcher
 {
-    /// <summary>
-    /// Sends a request and returns the response.
-    /// </summary>
-    /// <typeparam name="TResponse">The response type.</typeparam>
-    /// <param name="request">The request to send.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The response from the handler.</returns>
-    /// <exception cref="HandlerNotFoundException">Thrown if no handler is found for the request.</exception>
+    /// <inheritdoc/>
     public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (serviceProvider.GetService<IRequestHandler<IRequest<TResponse>, TResponse>>() is not IRequestHandler<IRequest<TResponse>, TResponse> handler)
+        var requestType = request.GetType();
+        
+        var dispatchMethod = this.GetType().GetMethod(nameof(Dispatch), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        
+        var genericDispatchMethod = dispatchMethod!.MakeGenericMethod(requestType, typeof(TResponse));
+        
+        var response = await (Task<TResponse>)genericDispatchMethod.Invoke(this, new object[] { request, cancellationToken })!;
+        
+        return response;
+    }
+
+    private async Task<TResponse> Dispatch<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken)
+        where TRequest : IRequest<TResponse>
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (serviceProvider.GetService<IRequestHandler<TRequest, TResponse>>() is not IRequestHandler<TRequest, TResponse> handler)
             throw new HandlerNotFoundException(request.GetType());
 
         var pipelineBehaviors = serviceProvider.GetServices<IPipelineBehavior<IRequest<TResponse>, TResponse>>();
@@ -35,22 +48,24 @@ public class RequestDispatcher(IServiceProvider serviceProvider) : IRequestDispa
         return await handlerDelegate();
     }
 
-    /// <summary>
-    /// Sends a request that does not return a response.
-    /// </summary>
-    /// <param name="request">The request to send.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <exception cref="HandlerNotFoundException">Thrown if no handler is found for the request.</exception>
-    public async Task Send(IRequest request, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (serviceProvider.GetService<IRequestHandler<IRequest>>() is not IRequestHandler<IRequest> handler)
-            throw new HandlerNotFoundException(request.GetType());
+        var requestType = request.GetType();
 
-        var pipelineBehaviors = serviceProvider.GetServices<IPipelineBehavior<IRequest>>();
+        if (serviceProvider.GetService<IRequestHandler<TRequest>>() is not IRequestHandler<TRequest> handler)
+            throw new HandlerNotFoundException(requestType);
 
-        Func<Task> handlerDelegate = () => handler.Handle(request, cancellationToken);
+        var pipelineBehaviors = serviceProvider.GetServices<IPipelineBehavior<TRequest, Void>>();
+
+        Func<Task<Void>> handlerDelegate = async () => {
+
+            await handler.Handle(request, cancellationToken);
+            return Void.Instance;
+            
+        };
 
         foreach (var behavior in pipelineBehaviors.Reverse())
         {

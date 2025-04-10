@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run SkiLift Sample API",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-sample",
+            "program": "${workspaceFolder}/samples/SkiLift.Samples.MinimalApi/bin/Debug/net9.0/SkiLift.Samples.MinimalApi.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/samples/SkiLift.Samples.MinimalApi",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/scalar"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        }
+    ]
+}

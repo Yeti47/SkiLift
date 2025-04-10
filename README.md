@@ -41,14 +41,29 @@ public class CreateOrderHandler : ICommandHandler<CreateOrderCommand, bool>
 
 Use the `AddSkiLift` extension method to configure SkiLift in your application's dependency injection container.
 
+You can either auto-register all handlers/behaviors in a specified assembly like so:
+
 ```csharp
 using SkiLift.Configuration;
 
 var services = new ServiceCollection();
 services.AddSkiLift(config =>
 {
-    config.AddHandlersFromAssemblyContaining<CreateOrderHandler>();
-    config.AddPipelineBehaviorsFromAssemblyContaining<LoggingBehavior>();
+    config.AddHandlersFromAssemblyContaining<Program>();
+    config.AddPipelineBehaviorsFromAssemblyContaining<Program>();
+});
+```
+
+or register them explicitly.
+
+```csharp
+using SkiLift.Configuration;
+
+var services = new ServiceCollection();
+services.AddSkiLift(config =>
+{
+    config.AddHandler<GetAllOrdersQuery, IEnumerable<Order>, GetAllOrdersHandler>();
+    config.AddPipelineBehavior(typeof(LoggingBehavior<,>));
 });
 ```
 
@@ -73,12 +88,15 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
 {
     public async Task<TResponse> Handle(
         TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+        Func<Task<TResponse>> next,
         CancellationToken cancellationToken)
     {
         Console.WriteLine($"Handling {typeof(TRequest).Name}");
+
         var response = await next();
+
         Console.WriteLine($"Handled {typeof(TRequest).Name}");
+
         return response;
     }
 }
