@@ -11,10 +11,8 @@ public record GetOrderByIdQuery : IQuery<Order?>
 
 public class GetOrderByIdHandler(IOrderRepository orderRepository) : IQueryHandler<GetOrderByIdQuery, Order?>
 {
-    private readonly IOrderRepository _orderRepository = orderRepository;
-
     public Task<Order?> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
     {
-        return _orderRepository.GetByIdAsync(request.Id);
+        return orderRepository.GetByIdAsync(request.Id);
     }
 }
