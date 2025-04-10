@@ -12,8 +12,6 @@ public record CreateOrderCommand : ICommand<string>
 
 public class CreateOrderHandler(IOrderRepository orderRepository) : ICommandHandler<CreateOrderCommand, string>
 {
-    private readonly IOrderRepository _orderRepository = orderRepository;
-
     public async Task<string> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         var order = new Order
@@ -22,7 +20,7 @@ public class CreateOrderHandler(IOrderRepository orderRepository) : ICommandHand
             TotalAmount = request.TotalAmount
         };
 
-        await _orderRepository.AddAsync(order);
+        await orderRepository.AddAsync(order);
         
         return order.Id;
     }
